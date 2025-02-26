@@ -1,151 +1,133 @@
-# Notion Connector Integration Guide
+# Mixpanel Connector Integration Guide
 
 ## Introduction
 
-The Notion Connector enables seamless integration with the Notion platform, allowing users to automate database management, note-taking, and other tasks. This guide provides comprehensive instructions on configuring and utilizing the Notion Connector within your application.
+The Mixpanel connector enables seamless integration with the Mixpanel platform, allowing you to manage service accounts through the Mixpanel API. This guide provides comprehensive instructions on configuring and utilizing the Mixpanel Connector within your application.
 
-## Getting Started with Notion
+## Features
 
-To begin using the Notion Connector, follow these steps:
+- Retrieve all service accounts from your Mixpanel organization
+- Create new service accounts with customizable roles and permissions
+- Query user profiles from Mixpanel
+- Integration with FastAPI for easy API access
+- Structured input and output schemas for validation
 
-1. **Create a Notion Account**: Visit the Notion website and sign up for an account - [https://www.notion.so/](https://www.notion.so/).
-2. **Set Up Your Notion Workspace**: Familiarize yourself with Notion’s features, including creating pages, databases, and managing permissions.
-3. **Generate API Credentials**: In the Notion API Dashboard, create an integration and obtain your API key. This key is required for authentication when interacting with the Notion API.
+## Getting Started with Mixpanel
 
-## Configuring the Notion Connector
+To begin using the Mixpanel connector, follow these steps:
 
-Once you have your Notion account and API credentials, you can configure the Notion Connector with the following settings:
+1. **Create a Mixpanel Account:** Visit the Mixpanel website and sign up for an account - <https://mixpanel.com/>
+2. **Set Up Your Mixpanel Project:** Once registered, create a new project and obtain the organization ID.
+3. **Generate Service Account Credentials:** In your Mixpanel settings, create a service account and generate its credentials. These credentials will be used for authentication when interacting with the Mixpanel API.
 
-- `api_key`: Your Notion API key for authentication.
-- `database_id`: The ID of the database you want to interact with.
-- `page_id`: The ID of the page you want to modify.
+## Configuring the Mixpanel Connector
 
-## Configuration Example
+Once you have your Mixpanel account and service account credentials, you can configure the Mixpanel Connector with the following settings:
 
-To obtain Notion API credentials for your application, follow these steps:
+- `organization_id`: Your Mixpanel organization ID.
+- `username`: Your Mixpanel service account username.
+- `password`: Your Mixpanel service account password.
 
-1. Go to the [Notion API Dashboard](https://www.notion.so/my-integrations).
-2. Create a new integration and obtain the API key.
-3. Share your pages or databases with your integration to grant necessary access.
-4. Note down the `database_id` and `page_id` from your Notion workspace.
-5. Store these credentials securely in your application's configuration file or environment variables.
+## API Endpoints
 
-## Functionalities
+The connector exposes the following endpoints:
 
-The Notion Connector supports the following functionalities:
+### Get Service Accounts
 
-- Creating Pages
-- Deleting Pages
-- Reading Page Content
-- Updating Pages
-- Querying Databases
-- Searching Pages
-- Sharing Pages
+```
+GET /mixpanel/get_service_accounts/{connectorID}
+```
 
-## Actions
+Retrieves all service accounts from your Mixpanel organization.
 
-### create
+#### Input Schema
 
-**Description**: Create a new page in a specified database.
+The input schema requires your organization ID.
 
-**Inputs:**
+#### Output Schema
 
-- `database_id`: str - The ID of the database where the page will be created.
-- `properties`: dict - The properties of the new page (title, tags, etc.).
+The output provides the total count of service accounts and a list of all service accounts retrieved.
 
-**Outputs:**
+### Create Service Account
 
-- `page_id`: str
+```
+POST /mixpanel/create/{connectorID}
+```
 
-### delete
+Creates a new service account in your Mixpanel organization.
 
-**Description**: Delete a page.
+#### Input Schema
 
-**Inputs:**
+- `username`: (Required) Username for the service account.
+- `role`: (Optional) Role of the service account.
+- `expires`: (Optional) Expiration date for the service account.
+- `projects`: (Optional) List of projects to associate with the service account.
 
-- `page_id`: str - The ID of the page to be deleted.
+#### Output Schema
 
-**Outputs:**
+- `service_account_created`: Indicates if the service account was created successfully.
+- `id`: ID of the created service account.
 
-- `success`: str
-- `message`: str
+### Query Profiles
 
-### read
+```
+POST /mixpanel/query_profiles/{connectorID}
+```
 
-**Description**: Read the content of a page.
+Queries user profiles from Mixpanel based on the provided filters.
 
-**Inputs:**
+#### Input Schema
 
-- `page_id`: str - The ID of the page to be read.
+- `where`: (Optional) Query filter expression.
+- `output_properties`: (Optional) List of properties to retrieve.
+- `page`: (Optional) Page number for pagination.
+- `session_id`: (Optional) Session ID for pagination.
 
-**Outputs:**
+#### Output Schema
 
-- `page_content`: str
+- `results`: List of user profiles that match the query.
+- `page`: Current page number.
+- `session_id`: (Optional) Session ID for pagination.
 
-### update
+### Get Schema
 
-**Description**: Update a page with new content or properties.
+```
+GET /mixpanel/get_service_accounts
+```
 
-**Inputs:**
+Returns the input and output schema for the service accounts endpoint.
 
-- `page_id`: str - The ID of the page to be updated.
-- `updates`: dict - The new content or properties to be updated.
+```
+GET /mixpanel/create
+```
 
-**Outputs:**
+Returns the input and output schema for the create service account endpoint.
 
-- `success`: str
+```
+GET /mixpanel/query_profiles
+```
 
-### query
+Returns the input and output schema for the query profiles endpoint.
 
-**Description**: Query a database to retrieve pages based on specific filters.
+## Implementation Details
 
-**Inputs:**
+The connector uses basic authentication with base64 encoding to authenticate requests to the Mixpanel API. It makes HTTP requests to the Mixpanel API endpoints to retrieve service account information and create new service accounts.
 
-- `database_id`: str - The ID of the database to be queried.
-- `filters`: dict - Filters for querying specific pages.
+### Creating Service Accounts
 
-**Outputs:**
+When creating a service account, you must provide a username. You can optionally specify a role, an expiration date, and a list of projects to associate with the account.
 
-- `results`: array
+### Querying User Profiles
 
-### search
+The `query_profiles` endpoint allows you to filter user profiles using Mixpanel's query language. You can specify filtering conditions using the `where` parameter and retrieve specific properties using `output_properties`.
 
-**Description**: Search for pages containing a specific keyword.
+## Error Handling
 
-**Inputs:**
+The connector handles errors gracefully and returns appropriate HTTP exceptions with detailed error messages when issues occur during API requests. For creation requests, it will attempt to extract and return the detailed error information from the Mixpanel API response.
 
-- `search_word`: str
+## Dependencies
 
-**Outputs:**
-
-- `pages`: array
-
-### share
-
-**Description**: Share a page with a specific user.
-
-**Inputs:**
-
-- `page_id`: str
-- `email`: str
-- `role`: str
-
-**Outputs:**
-
-- `permission_id`: str
-
-## Best Practices
-
-To make the most out of the Notion Connector, consider the following best practices:
-
-- **Page Organization**: Maintain a structured workspace to ensure smooth automation and collaboration.
-- **Error Handling**: Implement robust error handling mechanisms to manage API failures gracefully.
-- **Collaboration**: Use Notion’s sharing and permission settings to manage access effectively.
-- **Security**: Securely manage and protect your Notion API key to prevent unauthorized access.
-
-## Conclusion
-
-The Notion Connector offers a powerful solution for automating note-taking, database management, and collaboration through seamless integration with the Notion platform. By leveraging Notion’s capabilities, developers can build sophisticated automation workflows to streamline data organization, retrieval, and collaboration. With proper configuration and utilization of the Notion Connector, users can maximize productivity and enhance their workspace management.
-
-Follow Notion's API usage guidelines and terms of service to maintain compliance and functionality.
-
+- FastAPI
+- Pydantic
+- Requests
+- Base64
