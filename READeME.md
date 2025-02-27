@@ -82,18 +82,25 @@ The Mixpanel Connector supports the following actions:
 
 ---
 
-### 5. Track Event
-**Description:** Tracks events in Mixpanel with custom properties.
 
-**Inputs:**
-- `event` (string, optional): Name of the event.
-- `properties` (object, optional): Event properties.
+## 5. Track Event  
+**Description:** Tracks events in Mixpanel with custom properties.  
 
-**Outputs:**
-- `status` (integer, required): 1 for success, 0 for failure.
+**Inputs:**  
+**Query Params:**  
+- `strict` (string, required, defaults to `1`): When set to `1` (recommended), Mixpanel validates the batch and returns errors per event that failed.  
+- `project_id` (string, required, defaults to `<YOUR_PROJECT_ID>`): The Mixpanel `project_id`, used to authenticate service account credentials.  
+
+**Body Params:**  
+- `event` (string, required): Name of the event.  
+- `properties` (object, required): A JSON object containing event properties.  
+  - `time` (integer, required): The time at which the event occurred, in seconds or milliseconds since UTC epoch.  
+  - `distinct_id` (string, required): The unique identifier of the user who performed the event.  
+  - `$insert_id` (string, required): A unique identifier for deduplication. Events with identical values for (`event`, `time`, `distinct_id`, `$insert_id`) are considered duplicates; only the latest one will be counted.  
+
+**Outputs:**  
+- `status` (integer, required): `1` for success, `0` for failure.  
 - `error` (string, optional): Error message if the request was unsuccessful.
-
----
 
 ## Best Practices
 To make the most out of the Mixpanel Connector, consider the following best practices:
